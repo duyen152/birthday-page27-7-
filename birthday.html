@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Chúc mừng sinh nhật!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #fff5f7, #ffe0f0, #fceabb);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      position: relative;
+      transition: background 1s ease;
+    }
+    h1 {
+      font-family: 'Pacifico', cursive;
+      font-size: 3em;
+      color: #d63384;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+      z-index: 2;
+    }
+    .scroll-container {
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      box-sizing: border-box;
+      z-index: 2;
+      margin-bottom: 20px;
+    }
+    .scroll-text {
+      display: inline-block;
+      padding-left: 100%;
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #ff4081;
+      animation: scroll-left 18s linear infinite;
+    }
+    @keyframes scroll-left {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-100%); }
+    }
+    .cake {
+      width: 250px;
+      margin-bottom: 20px;
+      z-index: 3;
+      transition: transform 0.5s ease;
+    }
+    .balloon {
+      position: absolute;
+      width: 60px;
+      height: 80px;
+      border-radius: 50%;
+      bottom: -100px;
+      animation: float 8s ease-in infinite;
+      z-index: 1;
+    }
+    .balloon::after {
+      content: '';
+      position: absolute;
+      width: 2px;
+      height: 60px;
+      background: #555;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    @keyframes float {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
+    }
+    .balloon:nth-child(1) { left: 10%; background-color: #ffb6c1; animation-delay: 0s; }
+    .balloon:nth-child(2) { left: 30%; background-color: #ffd700; animation-delay: 2s; }
+    .balloon:nth-child(3) { left: 50%; background-color: #87ceeb; animation-delay: 4s; }
+    .balloon:nth-child(4) { left: 70%; background-color: #98fb98; animation-delay: 6s; }
+    .balloon:nth-child(5) { left: 90%; background-color: #ff69b4; animation-delay: 8s; }
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 10;
+    }
+    button {
+      background: #ff4081;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #d63384;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: #ff4081;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3em;
+      color: #ff1493;
+      font-family: 'Pacifico', cursive;
+      opacity: 0;
+      z-index: 999;
+      animation: fadeInOut 3s ease forwards;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; }
+      30% { opacity: 1; }
+      70% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🎂 HAPPY BIRTHDAY BÉ 🎂</h1>
+  <div class="scroll-container">
+    <div class="scroll-text">
+      Chúc bé sinh nhật vui vẻ 💖 | Chúc em mọi điều tốt đẹp sẽ đến với em 🌟 |
+      Không có sự cố gắng nào là không được đền đáp cả ✨ | Cố lên nhé, iu em 😘
+    </div>
+  </div>
+  <img class="cake" id="cake-img" src="https://media.tenor.com/Xn0nI9uMcwYAAAAi/birthday-cake.gif" alt="Bánh sinh nhật">
+  <div class="balloon"></div>
+  <div class="balloon"></div>
+  <div class="balloon"></div>
+  <div class="balloon"></div>
+  <div class="balloon"></div>
+  <audio id="bg-music" loop>
+    <source src="https://www2.cs.uic.edu/~i101/SoundFiles/HappyBirthday.mid" type="audio/midi">
+  </audio>
+  <div class="controls">
+    <button onclick="toggleMusic()">🔊 Bật/Tắt Nhạc</button>
+    <button onclick="changeBackground()">🎨 Đổi màu nền</button>
+    <button onclick="celebrate()">🎉 Chúc mừng</button>
+  </div>
+  <canvas id="fireworks"></canvas>
+  <script>
+    const music = document.getElementById('bg-music');
+    const cake = document.getElementById('cake-img');
+    const body = document.body;
+    function toggleMusic() {
+      if (music.paused) {
+        music.play();
+      } else {
+        music.pause();
+      }
+    }
+    const backgrounds = [
+      "linear-gradient(135deg, #fff5f7, #ffe0f0, #fceabb)",
+      "linear-gradient(135deg, #a18cd1, #fbc2eb)",
+      "linear-gradient(135deg, #ffecd2, #fcb69f)"
+    ];
+    let current = 0;
+    function changeBackground() {
+      current = (current + 1) % backgrounds.length;
+      body.style.background = backgrounds[current];
+    }
+    function celebrate() {
+      cake.src = "https://media.tenor.com/X7v5q7T-ssQAAAAC/happy-birthday-cake.gif";
+      cake.style.transform = "scale(1.1)";
+      setTimeout(() => cake.style.transform = "scale(1)", 800);
+      for (let i = 0; i < 50; i++) {
+        createConfetti();
+      }
+      const popup = document.createElement('div');
+      popup.className = "popup";
+      popup.textContent = "Happy Birthday!";
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 3000);
+    }
+    function createConfetti() {
+      const confetti = document.createElement('div');
+      confetti.classList.add('confetti');
+      document.body.appendChild(confetti);
+      const size = Math.random() * 10 + 5;
+      confetti.style.width = `${size}px`;
+      confetti.style.height = `${size}px`;
+      confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+      confetti.style.left = Math.random() * window.innerWidth + 'px';
+      confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+      setTimeout(() => confetti.remove(), 5000);
+    }
+    setInterval(createConfetti, 200);
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    class Firework {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height;
+        this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        this.radius = Math.random() * 2 + 2;
+        this.velocityY = Math.random() * 5 + 4;
+        this.exploded = false;
+        this.particles = [];
+      }
+      update() {
+        if (!this.exploded) {
+          this.y -= this.velocityY;
+          if (this.y < canvas.height / 2) {
+            this.exploded = true;
+            for (let i = 0; i < 30; i++) {
+              this.particles.push(new Particle(this.x, this.y, this.color));
+            }
+          }
+        }
+      }
+      draw() {
+        if (!this.exploded) {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+        }
+        this.particles.forEach(p => {
+          p.update();
+          p.draw();
+        });
+      }
+    }
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = Math.random() * 2 + 1;
+        this.velocityX = (Math.random() - 0.5) * 6;
+        this.velocityY = (Math.random() - 0.5) * 6;
+        this.alpha = 1;
+      }
+      update() {
+        this.x += this.velocityX;
+        this.y += this.velocityY;
+        this.alpha -= 0.02;
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+    let fireworks = [];
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (Math.random() < 0.05) {
+        fireworks.push(new Firework());
+      }
+      fireworks.forEach((fw, index) => {
+        fw.update();
+        fw.draw();
+        if (fw.exploded && fw.particles.every(p => p.alpha <= 0)) {
+          fireworks.splice(index, 1);
+        }
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
